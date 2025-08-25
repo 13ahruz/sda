@@ -54,22 +54,20 @@ async def list_services(
 
 @router.post("/services", response_model=ServiceRead)
 async def create_service(
-    title: str = Form(...),
+    name: str = Form(...),
     description: str = Form(...),
     order: int = Form(0),
     icon: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
     """Create a new service with form data and optional icon upload"""
-    icon_url = None
-    if icon:
-        icon_url = await upload_file(icon, "services/icons")
+    # Note: icon upload would need to be handled separately as Service model doesn't have icon_url field
+    # For now, we'll just create the service without the icon
     
     service_data = ServiceCreate(
-        title=title,
+        name=name,
         description=description,
-        order=order,
-        icon_url=icon_url
+        order=order
     )
     return service.create(db=db, obj_in=service_data)
 

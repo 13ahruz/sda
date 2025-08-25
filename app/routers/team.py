@@ -32,11 +32,8 @@ async def list_team_members(
 
 @router.post("/team-members", response_model=TeamMemberRead)
 async def create_team_member(
-    name: str = Form(...),
-    position: str = Form(...),
-    department: Optional[str] = Form(None),
-    bio: Optional[str] = Form(None),
-    display_order: int = Form(0),
+    full_name: str = Form(...),
+    role: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -46,11 +43,8 @@ async def create_team_member(
         photo_url = await upload_file(photo, "team/members")
     
     member_data = TeamMemberCreate(
-        name=name,
-        position=position,
-        department=department,
-        bio=bio,
-        display_order=display_order,
+        full_name=full_name,
+        role=role,
         photo_url=photo_url
     )
     return team_member.create(db=db, obj_in=member_data)

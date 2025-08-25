@@ -48,6 +48,27 @@ class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
         )
 
 class CRUDTeamSection(CRUDBase[TeamSection, TeamSectionCreate, TeamSectionUpdate]):
+    def create(self, db: Session, *, obj_in: TeamSectionCreate) -> TeamSection:
+        # Extract items data before creating the team section
+        obj_in_data = obj_in.model_dump()
+        items_data = obj_in_data.pop('items', [])
+        
+        # Create the team section without items
+        db_obj = self.model(**obj_in_data)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        
+        # Add items if any
+        if items_data:
+            for item_data in items_data:
+                item_obj = TeamSectionItem(team_section_id=db_obj.id, **item_data)
+                db.add(item_obj)
+            db.commit()
+            db.refresh(db_obj)
+        
+        return db_obj
+
     def get_multi_ordered(
         self,
         db: Session,

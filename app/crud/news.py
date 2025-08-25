@@ -6,6 +6,27 @@ from ..models.news import News, NewsSection
 from ..schemas.news import NewsCreate, NewsUpdate, NewsSectionCreate, NewsSectionUpdate
 
 class CRUDNews(CRUDBase[News, NewsCreate, NewsUpdate]):
+    def create(self, db: Session, *, obj_in: NewsCreate) -> News:
+        # Extract sections data before creating the news
+        obj_in_data = obj_in.model_dump()
+        sections_data = obj_in_data.pop('sections', [])
+        
+        # Create the news without sections
+        db_obj = self.model(**obj_in_data)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        
+        # Add sections if any
+        if sections_data:
+            for section_data in sections_data:
+                section_obj = NewsSection(news_id=db_obj.id, **section_data)
+                db.add(section_obj)
+            db.commit()
+            db.refresh(db_obj)
+        
+        return db_obj
+
     def get_multi_filtered(
         self, 
         db: Session, 

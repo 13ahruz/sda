@@ -31,7 +31,7 @@ async def list_news(
 @router.post("/news", response_model=NewsRead)
 async def create_news(
     title: str = Form(...),
-    content: str = Form(...),
+    summary: str = Form(...),
     tags: str = Form(""),  # Comma-separated tags
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
@@ -46,7 +46,7 @@ async def create_news(
     
     news_data = NewsCreate(
         title=title,
-        content=content,
+        summary=summary,
         tags=tags_list,
         photo_url=photo_url
     )

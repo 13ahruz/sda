@@ -29,14 +29,14 @@ async def list_partners(
 
 @router.post("/partners", response_model=PartnerRead)
 async def create_partner(
-    name: str = Form(...),
-    website_url: Optional[str] = Form(None),
+    title: str = Form(...),
+    button_text: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     """Create a new partner with form data"""
     partner_data = PartnerCreate(
-        name=name,
-        website_url=website_url
+        title=title,
+        button_text=button_text
     )
     return partner.create(db=db, obj_in=partner_data)
 
