@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     
     DATABASE_URL: str | None = None
     
+    # Server configuration
+    SERVER_HOST: str = "153.92.223.91"
+    SERVER_PORT: str = "8000"
+    
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_URL: str | None = None
