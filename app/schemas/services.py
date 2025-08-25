@@ -6,6 +6,7 @@ class ServiceBase(BaseModel):
     name: str
     description: Optional[str] = None
     order: int = 0
+    icon_url: Optional[str] = None
 
 class ServiceCreate(ServiceBase):
     pass
@@ -14,6 +15,7 @@ class ServiceUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     order: Optional[int] = None
+    icon_url: Optional[str] = None
 
 class ServiceRead(ServiceBase):
     id: int

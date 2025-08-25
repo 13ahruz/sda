@@ -61,13 +61,15 @@ async def create_service(
     db: Session = Depends(get_db)
 ):
     """Create a new service with form data and optional icon upload"""
-    # Note: icon upload would need to be handled separately as Service model doesn't have icon_url field
-    # For now, we'll just create the service without the icon
+    icon_url = None
+    if icon:
+        icon_url = await upload_file(icon, "services/icons")
     
     service_data = ServiceCreate(
         name=name,
         description=description,
-        order=order
+        order=order,
+        icon_url=icon_url
     )
     return service.create(db=db, obj_in=service_data)
 

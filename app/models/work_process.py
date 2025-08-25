@@ -9,6 +9,7 @@ class WorkProcess(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    image_url: Mapped[str | None] = mapped_column(Text)
     
     __table_args__ = (
         Index("ix_work_processes_order", "order"),

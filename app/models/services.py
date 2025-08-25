@@ -9,6 +9,7 @@ class Service(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    icon_url: Mapped[str | None] = mapped_column(Text)
     
     __table_args__ = (
         Index("ix_services_order", "order"),

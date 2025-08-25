@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -9,6 +9,7 @@ from ..schemas.work_process import (
     WorkProcessRead,
     WorkProcessUpdate
 )
+from ..utils.uploads import upload_file
 from ..utils.uploads import upload_file
 
 router = APIRouter()
@@ -25,10 +26,31 @@ async def list_work_processes(
 
 @router.post("/work-processes", response_model=WorkProcessRead)
 async def create_work_process(
+    title: str = Form(...),
+    description: str = Form(...),
+    order: int = Form(0),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    """Create a new work process with form data and optional image"""
+    image_url = None
+    if image:
+        image_url = await upload_file(image, "work-processes")
+    
+    process_data = WorkProcessCreate(
+        title=title,
+        description=description,
+        order=order,
+        image_url=image_url
+    )
+    return work_process.create(db=db, obj_in=process_data)
+
+@router.post("/work-processes/json", response_model=WorkProcessRead)
+async def create_work_process_json(
     process_in: WorkProcessCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new work process"""
+    """Create a new work process with JSON data (for backwards compatibility)"""
     return work_process.create(db=db, obj_in=process_in)
 
 @router.post("/work-processes/{process_id}/photo")
