@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Form
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -28,10 +28,25 @@ async def list_property_sectors(
 
 @router.post("/property-sectors", response_model=PropertySectorRead)
 async def create_property_sector(
+    title: str = Form(...),
+    description: str = Form(...),
+    order: int = Form(0),
+    db: Session = Depends(get_db)
+):
+    """Create a new property sector with form data"""
+    property_sector_data = PropertySectorCreate(
+        title=title,
+        description=description,
+        order=order
+    )
+    return property_sector.create(db=db, obj_in=property_sector_data)
+
+@router.post("/property-sectors/json", response_model=PropertySectorRead)
+async def create_property_sector_json(
     property_sector_in: PropertySectorCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new property sector"""
+    """Create a new property sector with JSON data (for backwards compatibility)"""
     return property_sector.create(db=db, obj_in=property_sector_in)
 
 @router.get("/property-sectors/{property_sector_id}", response_model=PropertySectorRead)
@@ -84,10 +99,27 @@ async def list_sector_inns(
 
 @router.post("/sector-inns", response_model=SectorInnRead)
 async def create_sector_inn(
+    title: str = Form(...),
+    description: str = Form(...),
+    property_sector_id: int = Form(...),
+    order: int = Form(0),
+    db: Session = Depends(get_db)
+):
+    """Create a new sector inn with form data"""
+    sector_inn_data = SectorInnCreate(
+        title=title,
+        description=description,
+        property_sector_id=property_sector_id,
+        order=order
+    )
+    return sector_inn.create(db=db, obj_in=sector_inn_data)
+
+@router.post("/sector-inns/json", response_model=SectorInnRead)
+async def create_sector_inn_json(
     sector_inn_in: SectorInnCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new sector inn"""
+    """Create a new sector inn with JSON data (for backwards compatibility)"""
     return sector_inn.create(db=db, obj_in=sector_inn_in)
 
 @router.get("/sector-inns/{sector_inn_id}", response_model=SectorInnRead)

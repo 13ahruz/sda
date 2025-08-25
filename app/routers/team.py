@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -32,7 +32,6 @@ async def list_team_members(
 
 @router.post("/team-members", response_model=TeamMemberRead)
 async def create_team_member(
-    request: Request,
     full_name: str = Form(...),
     role: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
@@ -41,7 +40,7 @@ async def create_team_member(
     """Create a new team member with form data and optional photo"""
     photo_url = None
     if photo:
-        photo_url = await upload_file(photo, "team/members", request)
+        photo_url = await upload_file(photo, "team/members")
     
     member_data = TeamMemberCreate(
         full_name=full_name,
@@ -61,7 +60,6 @@ async def create_team_member_json(
 @router.post("/team-members/{member_id}/photo")
 async def upload_team_member_photo(
     member_id: int,
-    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -70,7 +68,7 @@ async def upload_team_member_photo(
     if not db_member:
         raise HTTPException(status_code=404, detail="Team member not found")
     
-    file_url = await upload_file(file, "team/members", request)
+    file_url = await upload_file(file, "team/members")
     team_member.update(db=db, db_obj=db_member, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
@@ -123,10 +121,23 @@ async def list_team_sections(
 
 @router.post("/team-sections", response_model=TeamSectionRead)
 async def create_team_section(
+    title: str = Form(...),
+    button_text: str = Form(None),
+    db: Session = Depends(get_db)
+):
+    """Create a new team section with form data"""
+    section_data = TeamSectionCreate(
+        title=title,
+        button_text=button_text
+    )
+    return team_section.create(db=db, obj_in=section_data)
+
+@router.post("/team-sections/json", response_model=TeamSectionRead)
+async def create_team_section_json(
     section_in: TeamSectionCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new team section"""
+    """Create a new team section with JSON data (for backwards compatibility)"""
     return team_section.create(db=db, obj_in=section_in)
 
 @router.get("/team-sections/{section_id}", response_model=TeamSectionRead)
@@ -190,7 +201,6 @@ async def create_team_section_item(
 @router.post("/team-section-items/{item_id}/photo")
 async def upload_team_section_item_photo(
     item_id: int,
-    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -199,7 +209,7 @@ async def upload_team_section_item_photo(
     if not db_item:
         raise HTTPException(status_code=404, detail="Team section item not found")
     
-    file_url = await upload_file(file, "team/sections", request)
+    file_url = await upload_file(file, "team/sections")
     team_section_item.update(db=db, db_obj=db_item, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 

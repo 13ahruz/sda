@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Form
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -24,10 +24,25 @@ async def list_approaches(
 
 @router.post("/approaches", response_model=ApproachRead)
 async def create_approach(
+    title: str = Form(...),
+    description: str = Form(None),
+    order: int = Form(0),
+    db: Session = Depends(get_db)
+):
+    """Create a new approach with form data"""
+    approach_data = ApproachCreate(
+        title=title,
+        description=description,
+        order=order
+    )
+    return approach.create(db=db, obj_in=approach_data)
+
+@router.post("/approaches/json", response_model=ApproachRead)
+async def create_approach_json(
     approach_in: ApproachCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new approach"""
+    """Create a new approach with JSON data (for backwards compatibility)"""
     return approach.create(db=db, obj_in=approach_in)
 
 @router.get("/approaches/{approach_id}", response_model=ApproachRead)

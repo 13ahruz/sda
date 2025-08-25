@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -29,16 +29,30 @@ async def list_about_sections(
 
 @router.post("/about", response_model=AboutRead)
 async def create_about_section(
+    experience: str = Form(...),
+    project_count: str = Form(...),
+    members: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Create a new about section with form data"""
+    about_data = AboutCreate(
+        experience=experience,
+        project_count=project_count,
+        members=members
+    )
+    return about.create(db=db, obj_in=about_data)
+
+@router.post("/about/json", response_model=AboutRead)
+async def create_about_section_json(
     about_in: AboutCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new about section"""
+    """Create a new about section with JSON data (for backwards compatibility)"""
     return about.create(db=db, obj_in=about_in)
 
 @router.post("/about/{about_id}/photo")
 async def upload_about_photo(
     about_id: int,
-    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -47,7 +61,7 @@ async def upload_about_photo(
     if not db_about:
         raise HTTPException(status_code=404, detail="About section not found")
     
-    file_url = await upload_file(file, "about/photos", request)
+    file_url = await upload_file(file, "about/photos")
     about.update(db=db, db_obj=db_about, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
@@ -112,7 +126,6 @@ async def create_about_logo(
 @router.post("/about-logos/{logo_id}/upload")
 async def upload_about_logo_file(
     logo_id: int,
-    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -121,7 +134,7 @@ async def upload_about_logo_file(
     if not db_logo:
         raise HTTPException(status_code=404, detail="About logo not found")
     
-    file_url = await upload_file(file, "about/logos", request)
+    file_url = await upload_file(file, "about/logos")
     about_logo.update(db=db, db_obj=db_logo, obj_in={"logo_url": file_url})
     return {"message": "Logo uploaded successfully", "url": file_url}
 

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Form, UploadFile, File
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -27,10 +27,36 @@ async def list_contact_messages(
 
 @router.post("/contact-messages", response_model=ContactMessageRead)
 async def create_contact_message(
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    phone_number: str = Form(...),
+    email: str = Form(...),
+    message: str = Form(None),
+    cv: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    """Submit a new contact message with form data and optional CV upload"""
+    cv_url = None
+    if cv:
+        from ..utils.uploads import upload_file
+        cv_url = await upload_file(cv, "contact/cvs", "document")
+    
+    message_data = ContactMessageCreate(
+        first_name=first_name,
+        last_name=last_name,
+        phone_number=phone_number,
+        email=email,
+        message=message,
+        cv_url=cv_url
+    )
+    return contact_message.create(db=db, obj_in=message_data)
+
+@router.post("/contact-messages/json", response_model=ContactMessageRead)
+async def create_contact_message_json(
     message_in: ContactMessageCreate,
     db: Session = Depends(get_db)
 ):
-    """Submit a new contact message"""
+    """Submit a new contact message with JSON data (for backwards compatibility)"""
     return contact_message.create(db=db, obj_in=message_in)
 
 @router.get("/contact-messages/unread", response_model=List[ContactMessageRead])
