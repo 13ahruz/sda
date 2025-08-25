@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -39,6 +39,7 @@ async def list_projects(
 
 @router.post("/projects", response_model=ProjectRead)
 async def create_project(
+    request: Request,
     title: str = Form(...),
     tag: str = Form(...),
     client: str = Form(...),
@@ -50,7 +51,7 @@ async def create_project(
     """Create a new project with form data and optional cover photo"""
     cover_photo_url = None
     if cover_photo:
-        cover_photo_url = await upload_file(cover_photo, "projects/covers")
+        cover_photo_url = await upload_file(cover_photo, "projects/covers", request)
     
     project_data = ProjectCreate(
         title=title,
@@ -74,6 +75,7 @@ async def create_project_json(
 @router.post("/projects/{project_id}/cover-photo")
 async def upload_project_cover_photo(
     project_id: int,
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -82,7 +84,7 @@ async def upload_project_cover_photo(
     if not db_project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    file_url = await upload_file(file, "projects/covers")
+    file_url = await upload_file(file, "projects/covers", request)
     project.update(db=db, db_obj=db_project, obj_in={"cover_photo_url": file_url})
     return {"message": "Cover photo uploaded successfully", "url": file_url}
 
@@ -137,6 +139,7 @@ async def list_project_photos(
 @router.post("/projects/{project_id}/photos")
 async def upload_project_photo(
     project_id: int,
+    request: Request,
     file: UploadFile = File(...),
     order: int = Query(0),
     db: Session = Depends(get_db)
@@ -146,7 +149,7 @@ async def upload_project_photo(
     if not db_project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    file_url = await upload_file(file, "projects/photos")
+    file_url = await upload_file(file, "projects/photos", request)
     photo_data = ProjectPhotoCreate(project_id=project_id, order=order)
     db_photo = project_photo.create(db=db, obj_in=photo_data)
     project_photo.update(db=db, db_obj=db_photo, obj_in={"image_url": file_url})

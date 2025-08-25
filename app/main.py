@@ -23,6 +23,10 @@ from .routers import (
 RESOURCES_DIR = Path("resources")
 RESOURCES_DIR.mkdir(exist_ok=True)
 
+# Create uploads directory if it doesn't exist
+UPLOADS_DIR = Path("uploads")
+UPLOADS_DIR.mkdir(exist_ok=True)
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -53,6 +57,9 @@ app.include_router(work_process.router, prefix=settings.API_V1_STR, tags=["work 
 
 # Mount static file server for resources
 app.mount("/resources", StaticFiles(directory="resources"), name="resources")
+
+# Mount static file server for uploads
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.on_event("startup")
 async def startup_event():

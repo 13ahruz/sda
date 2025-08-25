@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -54,6 +54,7 @@ async def list_services(
 
 @router.post("/services", response_model=ServiceRead)
 async def create_service(
+    request: Request,
     name: str = Form(...),
     description: str = Form(...),
     order: int = Form(0),
@@ -63,7 +64,7 @@ async def create_service(
     """Create a new service with form data and optional icon upload"""
     icon_url = None
     if icon:
-        icon_url = await upload_file(icon, "services/icons")
+        icon_url = await upload_file(icon, "services/icons", request)
     
     service_data = ServiceCreate(
         name=name,

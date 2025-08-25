@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -30,6 +30,7 @@ async def list_news(
 
 @router.post("/news", response_model=NewsRead)
 async def create_news(
+    request: Request,
     title: str = Form(...),
     summary: str = Form(...),
     tags: str = Form(""),  # Comma-separated tags
@@ -39,7 +40,7 @@ async def create_news(
     """Create a new news article with form data and optional photo"""
     photo_url = None
     if photo:
-        photo_url = await upload_file(photo, "news")
+        photo_url = await upload_file(photo, "news", request)
     
     # Convert comma-separated tags to list
     tags_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
@@ -63,6 +64,7 @@ async def create_news_json(
 @router.post("/news/{news_id}/photo")
 async def upload_news_photo(
     news_id: int,
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -71,7 +73,7 @@ async def upload_news_photo(
     if not db_news:
         raise HTTPException(status_code=404, detail="News not found")
     
-    file_url = await upload_file(file, "news")
+    file_url = await upload_file(file, "news", request)
     news.update(db=db, db_obj=db_news, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
@@ -136,6 +138,7 @@ async def create_news_section(
 @router.post("/news-sections/{section_id}/image")
 async def upload_news_section_image(
     section_id: int,
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -144,7 +147,7 @@ async def upload_news_section_image(
     if not db_section:
         raise HTTPException(status_code=404, detail="News section not found")
     
-    file_url = await upload_file(file, "news/sections")
+    file_url = await upload_file(file, "news/sections", request)
     news_section.update(db=db, db_obj=db_section, obj_in={"image_url": file_url})
     return {"message": "Image uploaded successfully", "url": file_url}
 

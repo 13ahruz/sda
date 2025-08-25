@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
@@ -99,6 +99,7 @@ async def list_partner_logos(
 @router.post("/partners/{partner_id}/logos")
 async def upload_partner_logo(
     partner_id: int,
+    request: Request,
     file: UploadFile = File(...),
     order: int = Query(0),
     db: Session = Depends(get_db)
@@ -108,7 +109,7 @@ async def upload_partner_logo(
     if not db_partner:
         raise HTTPException(status_code=404, detail="Partner not found")
     
-    file_url = await upload_file(file, "partners/logos")
+    file_url = await upload_file(file, "partners/logos", request)
     logo_data = PartnerLogoCreate(partner_id=partner_id, order=order)
     db_logo = partner_logo.create(db=db, obj_in=logo_data)
     partner_logo.update(db=db, db_obj=db_logo, obj_in={"image_url": file_url})

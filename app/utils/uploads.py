@@ -1,7 +1,7 @@
 import os
 import uuid
 from typing import Optional
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, Request
 import aiofiles
 from pathlib import Path
 
@@ -14,10 +14,18 @@ ALLOWED_EXTENSIONS = {
     "document": {".pdf", ".doc", ".docx", ".txt"},
 }
 
+def get_base_url(request: Request = None) -> str:
+    """Get the base URL for the application."""
+    if request:
+        return str(request.base_url).rstrip('/')
+    # Fallback for when request is not available
+    return os.getenv('BASE_URL', 'http://localhost:8000')
+
 async def upload_file(
     file: UploadFile,
     subdirectory: str = "",
-    file_type: str = "image"
+    file_type: str = "image",
+    request: Request = None
 ) -> str:
     """
     Upload a file to the server and return the file URL.
@@ -63,8 +71,10 @@ async def upload_file(
             content = await file.read()
             await f.write(content)
         
-        # Return URL path (relative to server root)
-        return f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
+        # Return full URL (absolute URL)
+        base_url = get_base_url(request)
+        relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
+        return f"{base_url}{relative_path}"
     
     except Exception as e:
         raise HTTPException(
