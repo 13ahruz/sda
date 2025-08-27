@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
 from ..crud.property_sectors import property_sector, sector_inn
@@ -39,7 +40,15 @@ async def create_property_sector(
         description=description,
         order=order
     )
-    return property_sector.create(db=db, obj_in=property_sector_data)
+    try:
+        return property_sector.create(db=db, obj_in=property_sector_data)
+    except IntegrityError as e:
+        if "unique constraint" in str(e).lower():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Property sector with title '{title}' already exists"
+            )
+        raise HTTPException(status_code=400, detail="Database constraint violation")
 
 @router.post("/property-sectors/json", response_model=PropertySectorRead)
 async def create_property_sector_json(
@@ -47,7 +56,15 @@ async def create_property_sector_json(
     db: Session = Depends(get_db)
 ):
     """Create a new property sector with JSON data (for backwards compatibility)"""
-    return property_sector.create(db=db, obj_in=property_sector_in)
+    try:
+        return property_sector.create(db=db, obj_in=property_sector_in)
+    except IntegrityError as e:
+        if "unique constraint" in str(e).lower():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Property sector with title '{property_sector_in.title}' already exists"
+            )
+        raise HTTPException(status_code=400, detail="Database constraint violation")
 
 @router.get("/property-sectors/{property_sector_id}", response_model=PropertySectorRead)
 @cache(expire=300)

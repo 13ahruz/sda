@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import asc, and_
+from sqlalchemy import asc, desc, and_
 from ..crud.base import CRUDBase
 from ..models.projects import Project, ProjectPhoto
 from ..schemas.projects import ProjectCreate, ProjectUpdate, ProjectPhotoCreate, ProjectPhotoUpdate
@@ -48,7 +48,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             
         return (
             query
-            .order_by(asc(self.model.year).desc(), asc(self.model.id))
+            .order_by(desc(self.model.year), asc(self.model.id))
             .offset(skip)
             .limit(limit)
             .all()
