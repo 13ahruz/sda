@@ -48,7 +48,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             
         return (
             query
-            .order_by(desc(self.model.year), asc(self.model.id))
+            .order_by(desc(self.model.year))
             .offset(skip)
             .limit(limit)
             .all()
