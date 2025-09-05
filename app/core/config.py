@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
     
     # Server configuration
-    SERVER_HOST: str = "153.92.223.91"
+    SERVER_HOST: str = "127.0.0.1"  # Use local for Docker, nginx will proxy
     SERVER_PORT: str = "8000"
     
     REDIS_HOST: str = "redis"

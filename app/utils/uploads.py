@@ -64,9 +64,9 @@ async def upload_file(
             content = await file.read()
             await f.write(content)
         
-        # Return full URL with server host
+        # Return relative URL that nginx will serve
         relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
-        return f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}{relative_path}"
+        return relative_path  # Let nginx handle the domain part
     
     except Exception as e:
         raise HTTPException(
