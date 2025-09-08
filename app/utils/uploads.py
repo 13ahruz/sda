@@ -77,38 +77,35 @@ async def upload_file(
         print(f"[DEBUG] File size: {file_path.stat().st_size if file_path.exists() else 'N/A'}")
     except Exception as save_error:
         print(f"[DEBUG] File save failed: {save_error}")
-        raise
-        
-        # Generate proper URL based on environment
-        if request:
-            # Use the request's base URL (this will work with your domain)
-            base_url = f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}"
-            print(f"[DEBUG] Using request base URL: {base_url}")
-        elif settings.ENVIRONMENT == "production":
-            # Use the production domain URL
-            base_url = settings.DOMAIN_URL
-            print(f"[DEBUG] Using production domain: {base_url}")
-        else:
-            # Fallback to settings (for development)
-            base_url = f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}"
-            print(f"[DEBUG] Using development URL: {base_url}")
-        
-        # Return full URL
-        if subdirectory:
-            relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}"
-        else:
-            relative_path = f"/{UPLOAD_DIR}/{unique_filename}"
-        final_url = f"{base_url}{relative_path}"
-        print(f"[DEBUG] Subdirectory: '{subdirectory}'")
-        print(f"[DEBUG] Relative path: {relative_path}")
-        print(f"[DEBUG] Final upload URL: {final_url}")
-        return final_url
-    
-    except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to upload file: {str(e)}"
+            detail=f"Failed to upload file: {str(save_error)}"
         )
+    
+    # Generate proper URL based on environment
+    if request:
+        # Use the request's base URL (this will work with your domain)
+        base_url = f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}"
+        print(f"[DEBUG] Using request base URL: {base_url}")
+    elif settings.ENVIRONMENT == "production":
+        # Use the production domain URL
+        base_url = settings.DOMAIN_URL
+        print(f"[DEBUG] Using production domain: {base_url}")
+    else:
+        # Fallback to settings (for development)
+        base_url = f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}"
+        print(f"[DEBUG] Using development URL: {base_url}")
+    
+    # Return full URL
+    if subdirectory:
+        relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}"
+    else:
+        relative_path = f"/{UPLOAD_DIR}/{unique_filename}"
+    final_url = f"{base_url}{relative_path}"
+    print(f"[DEBUG] Subdirectory: '{subdirectory}'")
+    print(f"[DEBUG] Relative path: {relative_path}")
+    print(f"[DEBUG] Final upload URL: {final_url}")
+    return final_url
 
 async def delete_file(file_url: str) -> bool:
     """
