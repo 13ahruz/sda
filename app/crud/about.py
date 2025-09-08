@@ -38,10 +38,10 @@ class CRUDAbout(CRUDBase[About, AboutCreate, AboutUpdate]):
         skip: int = 0,
         limit: int = 100
     ) -> List[About]:
-        """Get about sections ordered by display order"""
+        """Get about sections ordered by id"""
         return (
             db.query(self.model)
-            .order_by(self.model.display_order.asc())
+            .order_by(self.model.id.asc())
             .offset(skip)
             .limit(limit)
             .all()

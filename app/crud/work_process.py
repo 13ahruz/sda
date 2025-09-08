@@ -12,10 +12,10 @@ class CRUDWorkProcess(CRUDBase[WorkProcess, WorkProcessCreate, WorkProcessUpdate
         skip: int = 0,
         limit: int = 100
     ) -> List[WorkProcess]:
-        """Get work processes ordered by step number"""
+        """Get work processes ordered by order field"""
         return (
             db.query(self.model)
-            .order_by(self.model.step_number.asc())
+            .order_by(self.model.order.asc())
             .offset(skip)
             .limit(limit)
             .all()

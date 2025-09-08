@@ -20,28 +20,28 @@ class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
         skip: int = 0,
         limit: int = 100
     ) -> List[TeamMember]:
-        """Get team members ordered by display order and name"""
+        """Get team members ordered by full_name"""
         return (
             db.query(self.model)
-            .order_by(self.model.display_order.asc(), self.model.name.asc())
+            .order_by(self.model.full_name.asc())
             .offset(skip)
             .limit(limit)
             .all()
         )
     
-    def get_by_department(
+    def get_by_role(
         self,
         db: Session,
         *,
-        department: str,
+        role: str,
         skip: int = 0,
         limit: int = 100
     ) -> List[TeamMember]:
-        """Get team members by department"""
+        """Get team members by role"""
         return (
             db.query(self.model)
-            .filter(self.model.department.ilike(f"%{department}%"))
-            .order_by(self.model.display_order.asc(), self.model.name.asc())
+            .filter(self.model.role.ilike(f"%{role}%"))
+            .order_by(self.model.full_name.asc())
             .offset(skip)
             .limit(limit)
             .all()
@@ -76,10 +76,10 @@ class CRUDTeamSection(CRUDBase[TeamSection, TeamSectionCreate, TeamSectionUpdate
         skip: int = 0,
         limit: int = 100
     ) -> List[TeamSection]:
-        """Get team sections ordered by display order"""
+        """Get team sections ordered by title"""
         return (
             db.query(self.model)
-            .order_by(self.model.display_order.asc())
+            .order_by(self.model.title.asc())
             .offset(skip)
             .limit(limit)
             .all()
