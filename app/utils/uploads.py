@@ -59,11 +59,25 @@ async def upload_file(
     # Full file path
     file_path = upload_path / unique_filename
     
+    print(f"[DEBUG] Upload directory: {UPLOAD_DIR}")
+    print(f"[DEBUG] Subdirectory: '{subdirectory}'")
+    print(f"[DEBUG] Upload path: {upload_path}")
+    print(f"[DEBUG] Full file path: {file_path}")
+    print(f"[DEBUG] File path exists: {file_path.exists()}")
+    print(f"[DEBUG] Upload path exists: {upload_path.exists()}")
+    
     try:
         # Save file
         async with aiofiles.open(file_path, 'wb') as f:
             content = await file.read()
             await f.write(content)
+        
+        print(f"[DEBUG] File saved successfully")
+        print(f"[DEBUG] File exists after save: {file_path.exists()}")
+        print(f"[DEBUG] File size: {file_path.stat().st_size if file_path.exists() else 'N/A'}")
+    except Exception as save_error:
+        print(f"[DEBUG] File save failed: {save_error}")
+        raise
         
         # Generate proper URL based on environment
         if request:
