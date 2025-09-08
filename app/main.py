@@ -19,9 +19,25 @@ from .routers import (
     uploads
 )
 
-# Create uploads directory if it doesn't exist
+# Create uploads directory structure if it doesn't exist
 UPLOADS_DIR = Path("uploads")
 UPLOADS_DIR.mkdir(exist_ok=True)
+
+# Create subdirectories for organized file storage
+subdirs = [
+    "projects/covers",
+    "projects/photos", 
+    "team/members",
+    "team/sections",
+    "about/photos",
+    "about/logos",
+    "services/icons",
+    "partners/logos",
+    "work-processes"
+]
+
+for subdir in subdirs:
+    (UPLOADS_DIR / subdir).mkdir(parents=True, exist_ok=True)
 
 # Create resources directory if it doesn't exist
 RESOURCES_DIR = Path("resources")

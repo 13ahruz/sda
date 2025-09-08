@@ -1,7 +1,7 @@
 import os
 import uuid
 from typing import Optional
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, Request
 import aiofiles
 from pathlib import Path
 from ..core.config import settings
@@ -18,6 +18,7 @@ ALLOWED_EXTENSIONS = {
 async def upload_file(
     file: UploadFile,
     subdirectory: str = "",
+    request: Optional[Request] = None,
     file_type: str = "image"
 ) -> str:
     """
@@ -64,9 +65,20 @@ async def upload_file(
             content = await file.read()
             await f.write(content)
         
-        # Return relative URL that nginx will serve
+        # Generate proper URL based on environment
+        if request:
+            # Use the request's base URL (this will work with your domain)
+            base_url = f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}"
+        elif settings.ENVIRONMENT == "production":
+            # Use the production domain URL
+            base_url = settings.DOMAIN_URL
+        else:
+            # Fallback to settings (for development)
+            base_url = f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}"
+        
+        # Return full URL
         relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
-        return relative_path  # Let nginx handle the domain part
+        return f"{base_url}{relative_path}"
     
     except Exception as e:
         raise HTTPException(
@@ -146,6 +158,14 @@ async def save_upload_file(file: UploadFile) -> Optional[str]:
     except:
         return None
 
-def get_file_url(file_path: str) -> str:
+def get_file_url(file_path: str, request: Optional[Request] = None) -> str:
     """Convert file path to URL"""
-    return f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}/resources/{os.path.basename(file_path)}"
+    if request:
+        base_url = f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}"
+        return f"{base_url}/resources/{os.path.basename(file_path)}"
+    elif settings.ENVIRONMENT == "production":
+        # Use the production domain URL
+        return f"{settings.DOMAIN_URL}/resources/{os.path.basename(file_path)}"
+    else:
+        # For development, use server host and port
+        return f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}/resources/{os.path.basename(file_path)}"

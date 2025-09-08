@@ -15,8 +15,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
     
     # Server configuration
-    SERVER_HOST: str = "127.0.0.1"  # Use local for Docker, nginx will proxy
+    SERVER_HOST: str = "153.92.223.91"
     SERVER_PORT: str = "8000"
+    
+    # Domain configuration for production
+    DOMAIN_URL: str = "https://sdaconsulting.az"
+    ENVIRONMENT: str = "development"  # development, production
     
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
@@ -34,7 +38,12 @@ class Settings(BaseSettings):
             return self.DATABASE_URL
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000", 
+        "http://localhost:8000",
+        "https://sdaconsulting.az",
+        "http://sdaconsulting.az"
+    ]
 
     class Config:
         case_sensitive = True

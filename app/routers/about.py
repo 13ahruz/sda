@@ -1,6 +1,20 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from sqlalchemy.orm import Session
+from @router.post("/about-logos/{logo_id}/file")
+async def upload_about_logo_file(
+    logo_id: int,
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload logo file for an about logo"""
+    db_logo = about_logo.get(db, id=logo_id)
+    if not db_logo:
+        raise HTTPException(status_code=404, detail="About logo not found")
+    
+    file_url = await upload_file(file, "about/logos", request)
+    about_logo.update(db=db, db_obj=db_logo, obj_in={"logo_url": file_url})
+    return {"message": "Logo uploaded successfully", "url": file_url} import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
 from ..crud.about import about, about_logo
@@ -53,6 +67,7 @@ async def create_about_section_json(
 @router.post("/about/{about_id}/photo")
 async def upload_about_photo(
     about_id: int,
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -61,7 +76,7 @@ async def upload_about_photo(
     if not db_about:
         raise HTTPException(status_code=404, detail="About section not found")
     
-    file_url = await upload_file(file, "about/photos")
+    file_url = await upload_file(file, "about/photos", request)
     about.update(db=db, db_obj=db_about, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
