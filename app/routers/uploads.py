@@ -9,8 +9,8 @@ router = APIRouter()
 async def upload_file_endpoint(file: UploadFile):
     """Upload a file and return its URL"""
     try:
-        # Use the upload_file function without request for admin compatibility
-        file_url = await upload_file(file, "uploads")
+        # Use empty subdirectory to avoid double /uploads/ in URL
+        file_url = await upload_file(file, "")
         return {"url": file_url}
     except Exception as e:
         raise HTTPException(

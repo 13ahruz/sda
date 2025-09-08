@@ -80,8 +80,13 @@ async def upload_file(
             print(f"[DEBUG] Using development URL: {base_url}")
         
         # Return full URL
-        relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
+        if subdirectory:
+            relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}"
+        else:
+            relative_path = f"/{UPLOAD_DIR}/{unique_filename}"
         final_url = f"{base_url}{relative_path}"
+        print(f"[DEBUG] Subdirectory: '{subdirectory}'")
+        print(f"[DEBUG] Relative path: {relative_path}")
         print(f"[DEBUG] Final upload URL: {final_url}")
         return final_url
     
