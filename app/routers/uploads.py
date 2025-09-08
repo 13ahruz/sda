@@ -1,7 +1,7 @@
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, HTTPException, Request
 from fastapi.responses import FileResponse
 from pathlib import Path
-from ..utils.uploads import upload_file, UPLOAD_DIR
+from ..utils.uploads import upload_file, RESOURCES_PATH
 
 router = APIRouter()
 
@@ -9,25 +9,19 @@ router = APIRouter()
 async def upload_file_endpoint(file: UploadFile):
     """Upload a file and return its URL"""
     try:
-        # Determine subdirectory based on file type/content
-        subdirectory = "images"  # Default to images
-        if file.content_type and file.content_type.startswith('video/'):
-            subdirectory = "videos"
-        
-        file_url = await upload_file(file, subdirectory, "image")
+        # Use the upload_file function without request for admin compatibility
+        file_url = await upload_file(file, "uploads")
         return {"url": file_url}
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Upload failed: {str(e)}"
+            detail=f"Failed to upload file: {str(e)}"
         )
 
-@router.get("/uploads/{path:path}")
-async def get_uploaded_file(path: str):
-    """Serve a file from the uploads directory"""
-    file_path = Path(UPLOAD_DIR) / path
+@router.get("/resources/{filename}")
+async def get_resource(filename: str):
+    """Serve a file from the resources directory"""
+    file_path = RESOURCES_PATH / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)

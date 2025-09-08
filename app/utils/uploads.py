@@ -69,16 +69,21 @@ async def upload_file(
         if request:
             # Use the request's base URL (this will work with your domain)
             base_url = f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}"
+            print(f"[DEBUG] Using request base URL: {base_url}")
         elif settings.ENVIRONMENT == "production":
             # Use the production domain URL
             base_url = settings.DOMAIN_URL
+            print(f"[DEBUG] Using production domain: {base_url}")
         else:
             # Fallback to settings (for development)
             base_url = f"http://{settings.SERVER_HOST}:{settings.SERVER_PORT}"
+            print(f"[DEBUG] Using development URL: {base_url}")
         
         # Return full URL
         relative_path = f"/{UPLOAD_DIR}/{subdirectory}/{unique_filename}" if subdirectory else f"/{UPLOAD_DIR}/{unique_filename}"
-        return f"{base_url}{relative_path}"
+        final_url = f"{base_url}{relative_path}"
+        print(f"[DEBUG] Final upload URL: {final_url}")
+        return final_url
     
     except Exception as e:
         raise HTTPException(
@@ -150,10 +155,10 @@ def create_resources_dir():
     if not RESOURCES_PATH.exists():
         RESOURCES_PATH.mkdir(parents=True)
 
-async def save_upload_file(file: UploadFile) -> Optional[str]:
+async def save_upload_file(file: UploadFile, request: Optional[Request] = None) -> Optional[str]:
     """Legacy function - use upload_file instead"""
     try:
-        file_url = await upload_file(file, "legacy")
+        file_url = await upload_file(file, "legacy", request)
         return file_url.replace("/uploads/legacy/", str(RESOURCES_PATH) + "/")
     except:
         return None

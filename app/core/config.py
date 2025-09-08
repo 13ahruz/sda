@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     
     # Domain configuration for production
     DOMAIN_URL: str = "https://sdaconsulting.az"
-    ENVIRONMENT: str = "development"  # development, production
+    ENVIRONMENT: str = "production"  # development, production
     
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
