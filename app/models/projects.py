@@ -14,8 +14,8 @@ class Project(Base, TimestampMixin):
     property_sector_id: Mapped[int | None] = mapped_column(ForeignKey("property_sectors.id", ondelete="SET NULL"))
     cover_photo_url: Mapped[str | None] = mapped_column(Text)
     
-    photos: Mapped[list["ProjectPhoto"]] = relationship(back_populates="project", cascade="all, delete-orphan", lazy="selectin")
-    property_sector: Mapped[PropertySector] = relationship(lazy="joined")
+    photos: Mapped[list["ProjectPhoto"]] = relationship(back_populates="project", cascade="all, delete-orphan", lazy="select")
+    property_sector: Mapped[PropertySector] = relationship(lazy="select")
     
     __table_args__ = (
         Index("ix_projects_property_sector", "property_sector_id"),

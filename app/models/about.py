@@ -10,7 +10,7 @@ class About(Base, TimestampMixin):
     project_count: Mapped[str] = mapped_column(Text, nullable=False)
     members: Mapped[str] = mapped_column(Text, nullable=False)
     
-    logos: Mapped[list["AboutLogo"]] = relationship(back_populates="about", cascade="all, delete-orphan", lazy="selectin")
+    logos: Mapped[list["AboutLogo"]] = relationship(back_populates="about", cascade="all, delete-orphan", lazy="select")
 
 class AboutLogo(Base, TimestampMixin):
     __tablename__ = "about_logos"

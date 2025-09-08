@@ -10,8 +10,8 @@ class PropertySector(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text)
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     
-    inns: Mapped[list["SectorInn"]] = relationship(back_populates="property_sector", cascade="all, delete-orphan", lazy="selectin")
-    projects: Mapped[list["Project"]] = relationship(back_populates="property_sector", lazy="selectin")
+    inns: Mapped[list["SectorInn"]] = relationship(back_populates="property_sector", cascade="all, delete-orphan", lazy="select")
+    projects: Mapped[list["Project"]] = relationship(back_populates="property_sector", lazy="select")
     
     __table_args__ = (
         Index("ix_property_sectors_order", "order"),

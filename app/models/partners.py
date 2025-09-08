@@ -9,7 +9,7 @@ class Partner(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     button_text: Mapped[str | None] = mapped_column(Text)
     
-    logos: Mapped[list["PartnerLogo"]] = relationship(back_populates="partner", cascade="all, delete-orphan", lazy="selectin")
+    logos: Mapped[list["PartnerLogo"]] = relationship(back_populates="partner", cascade="all, delete-orphan", lazy="select")
 
 class PartnerLogo(Base, TimestampMixin):
     __tablename__ = "partner_logos"

@@ -11,7 +11,7 @@ class News(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     summary: Mapped[str | None] = mapped_column(Text)
     
-    sections: Mapped[list["NewsSection"]] = relationship(back_populates="news", cascade="all, delete-orphan", lazy="selectin")
+    sections: Mapped[list["NewsSection"]] = relationship(back_populates="news", cascade="all, delete-orphan", lazy="select")
     
     __table_args__ = (
         Index("ix_news_tags", "tags", postgresql_using="gin"),

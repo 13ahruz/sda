@@ -21,7 +21,7 @@ class TeamSection(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     button_text: Mapped[str | None] = mapped_column(Text)
     
-    items: Mapped[list["TeamSectionItem"]] = relationship(back_populates="section", cascade="all, delete-orphan", lazy="selectin")
+    items: Mapped[list["TeamSectionItem"]] = relationship(back_populates="section", cascade="all, delete-orphan", lazy="select")
 
 class TeamSectionItem(Base, TimestampMixin):
     __tablename__ = "team_section_items"
