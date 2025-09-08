@@ -1,6 +1,20 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from @router.post("/about-logos/{logo_id}/file")
+async def upload_about_logo_file(
+    logo_id: int,
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload logo file for an about logo"""
+    db_logo = about_logo.get(db, id=logo_id)
+    if not db_logo:
+        raise HTTPException(status_code=404, detail="About logo not found")
+    
+    file_url = await upload_file(file, "about/logos", request)
+    about_logo.update(db=db, db_obj=db_logo, obj_in={"logo_url": file_url})
+    return {"message": "Logo uploaded successfully", "url": file_url} import Session
 from fastapi_cache.decorator import cache
 from ..core.db import get_db
 from ..crud.about import about, about_logo
@@ -117,24 +131,16 @@ async def list_about_logos(
 @router.post("/about/{about_id}/logos", response_model=AboutLogoRead)
 async def create_about_logo(
     about_id: int,
-    name: str = Form(...),
-    alt_text: Optional[str] = Form(None),
-    order: int = Form(0),
+    logo_in: AboutLogoCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new about logo with form data"""
-    logo_data = AboutLogoCreate(
-        about_id=about_id,
-        name=name,
-        alt_text=alt_text,
-        order=order
-    )
-    return about_logo.create(db=db, obj_in=logo_data)
+    """Create a new logo for an about section"""
+    logo_in.about_id = about_id
+    return about_logo.create(db=db, obj_in=logo_in)
 
-@router.post("/about-logos/{logo_id}/file")
+@router.post("/about-logos/{logo_id}/upload")
 async def upload_about_logo_file(
     logo_id: int,
-    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -143,7 +149,7 @@ async def upload_about_logo_file(
     if not db_logo:
         raise HTTPException(status_code=404, detail="About logo not found")
     
-    file_url = await upload_file(file, "about/logos", request)
+    file_url = await upload_file(file, "about/logos")
     about_logo.update(db=db, db_obj=db_logo, obj_in={"logo_url": file_url})
     return {"message": "Logo uploaded successfully", "url": file_url}
 
