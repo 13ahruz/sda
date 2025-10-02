@@ -9,9 +9,11 @@ class TeamMember(Base, TimestampMixin):
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     role: Mapped[str | None] = mapped_column(Text)
     photo_url: Mapped[str | None] = mapped_column(Text)
+    order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     
     __table_args__ = (
         Index("ix_team_members_full_name", "full_name"),
+        Index("ix_team_members_order", "order"),
     )
 
 class TeamSection(Base, TimestampMixin):

@@ -93,6 +93,16 @@ def get_service(
         raise HTTPException(status_code=404, detail="Service not found")
     return db_service
 
+@router.get("/services/slug/{service_slug}", response_model=ServiceRead)
+def get_service_by_slug(
+    service_slug: str,
+    db: Session = Depends(get_db)
+):
+    db_service = service.get_by_slug(db=db, slug=service_slug)
+    if not db_service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return db_service
+
 @router.patch("/services/{service_id}", response_model=ServiceRead)
 def update_service(
     *,

@@ -89,6 +89,18 @@ async def get_news(
         raise HTTPException(status_code=404, detail="News not found")
     return db_news
 
+@router.get("/news/slug/{news_slug}", response_model=NewsRead)
+@cache(expire=300)
+async def get_news_by_slug(
+    news_slug: str,
+    db: Session = Depends(get_db)
+):
+    """Get a specific news article by slug"""
+    db_news = news.get_by_slug(db, slug=news_slug)
+    if not db_news:
+        raise HTTPException(status_code=404, detail="News not found")
+    return db_news
+
 @router.put("/news/{news_id}", response_model=NewsRead)
 async def update_news(
     news_id: int,

@@ -6,6 +6,7 @@ class TeamMemberBase(BaseModel):
     full_name: str
     role: Optional[str] = None
     photo_url: Optional[str] = None
+    order: int = 0
 
 class TeamMemberCreate(TeamMemberBase):
     pass
@@ -14,6 +15,7 @@ class TeamMemberUpdate(BaseModel):
     full_name: Optional[str] = None
     role: Optional[str] = None
     photo_url: Optional[str] = None
+    order: Optional[int] = None
 
 class TeamMemberRead(TeamMemberBase):
     id: int

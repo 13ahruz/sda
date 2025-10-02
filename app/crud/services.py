@@ -5,7 +5,8 @@ from ..schemas.services import ServiceCreate, ServiceUpdate, ServiceBenefitCreat
 from .base import CRUDBase
 
 class CRUDService(CRUDBase[Service, ServiceCreate, ServiceUpdate]):
-    pass
+    def get_by_slug(self, db: Session, *, slug: str) -> Optional[Service]:
+        return db.query(Service).filter(Service.slug == slug).first()
 
 class CRUDServiceBenefit(CRUDBase[ServiceBenefit, ServiceBenefitCreate, ServiceBenefitUpdate]):
     pass

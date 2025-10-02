@@ -4,7 +4,12 @@ from typing import Optional
 
 class ServiceBase(BaseModel):
     name: str
+    slug: str
     description: Optional[str] = None
+    hero_text: Optional[str] = None
+    image_url: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
     order: int = 0
     icon_url: Optional[str] = None
 
@@ -13,7 +18,12 @@ class ServiceCreate(ServiceBase):
 
 class ServiceUpdate(BaseModel):
     name: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
+    hero_text: Optional[str] = None
+    image_url: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
     order: Optional[int] = None
     icon_url: Optional[str] = None
 

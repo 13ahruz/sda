@@ -6,6 +6,9 @@ from ..models.news import News, NewsSection
 from ..schemas.news import NewsCreate, NewsUpdate, NewsSectionCreate, NewsSectionUpdate
 
 class CRUDNews(CRUDBase[News, NewsCreate, NewsUpdate]):
+    def get_by_slug(self, db: Session, *, slug: str) -> Optional[News]:
+        return db.query(News).filter(News.slug == slug).first()
+    
     def create(self, db: Session, *, obj_in: NewsCreate) -> News:
         # Extract sections data before creating the news
         obj_in_data = obj_in.model_dump()
