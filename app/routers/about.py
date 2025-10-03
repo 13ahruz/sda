@@ -13,19 +13,34 @@ from ..schemas.about import (
     AboutLogoUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # About endpoints
-@router.get("/about", response_model=List[AboutRead])
+@router.get("/about")
 @cache(expire=300)
 async def list_about_sections(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all about sections"""
-    return about.get_multi_ordered(db, skip=skip, limit=limit)
+    """Get all about sections with multilingual support"""
+    lang = validate_language(language)
+    about_sections = about.get_multi_ordered(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_about = []
+    for section in about_sections:
+        multilingual_section = prepare_multilingual_response(
+            section, 
+            ['experience', 'project_count', 'members'], 
+            lang
+        )
+        multilingual_about.append(multilingual_section)
+    
+    return multilingual_about
 
 @router.post("/about", response_model=AboutRead)
 async def create_about_section(
@@ -66,17 +81,24 @@ async def upload_about_photo(
     about.update(db=db, db_obj=db_about, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
-@router.get("/about/{about_id}", response_model=AboutRead)
+@router.get("/about/{about_id}")
 @cache(expire=300)
 async def get_about_section(
     about_id: int,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific about section by ID"""
+    """Get a specific about section by ID with multilingual support"""
     db_about = about.get(db, id=about_id)
     if not db_about:
         raise HTTPException(status_code=404, detail="About section not found")
-    return db_about
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_about, 
+        ['experience', 'project_count', 'members'], 
+        lang
+    )
 
 @router.put("/about/{about_id}", response_model=AboutRead)
 async def update_about_section(

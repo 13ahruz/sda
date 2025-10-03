@@ -16,19 +16,34 @@ from ..schemas.team import (
     TeamSectionItemUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # TeamMember endpoints (full roster)
-@router.get("/team-members", response_model=List[TeamMemberRead])
+@router.get("/team-members")
 @cache(expire=300)
 async def list_team_members(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all team members for full roster"""
-    return team_member.get_multi_ordered(db, skip=skip, limit=limit)
+    """Get all team members for full roster with multilingual support"""
+    lang = validate_language(language)
+    members = team_member.get_multi_ordered(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_members = []
+    for member in members:
+        multilingual_member = prepare_multilingual_response(
+            member, 
+            ['full_name', 'role'], 
+            lang
+        )
+        multilingual_members.append(multilingual_member)
+    
+    return multilingual_members
 
 @router.post("/team-members", response_model=TeamMemberRead)
 async def create_team_member(
@@ -74,17 +89,24 @@ async def upload_team_member_photo(
     team_member.update(db=db, db_obj=db_member, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
-@router.get("/team-members/{member_id}", response_model=TeamMemberRead)
+@router.get("/team-members/{member_id}")
 @cache(expire=300)
 async def get_team_member(
     member_id: int,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific team member by ID"""
+    """Get a specific team member by ID with multilingual support"""
     db_member = team_member.get(db, id=member_id)
     if not db_member:
         raise HTTPException(status_code=404, detail="Team member not found")
-    return db_member
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_member, 
+        ['full_name', 'role'], 
+        lang
+    )
 
 @router.put("/team-members/{member_id}", response_model=TeamMemberRead)
 async def update_team_member(

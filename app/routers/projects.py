@@ -13,11 +13,12 @@ from ..schemas.projects import (
     ProjectPhotoUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # Project endpoints
-@router.get("/projects", response_model=List[ProjectRead])
+@router.get("/projects")
 @cache(expire=300)
 async def list_projects(
     skip: int = Query(0, ge=0),
@@ -25,10 +26,12 @@ async def list_projects(
     property_sector_id: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     tag: Optional[str] = Query(None),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all projects with optional filters"""
-    return project.get_multi_filtered(
+    """Get all projects with optional filters and multilingual support"""
+    lang = validate_language(language)
+    projects = project.get_multi_filtered(
         db, 
         skip=skip, 
         limit=limit,
@@ -36,6 +39,18 @@ async def list_projects(
         year=year,
         tag=tag
     )
+    
+    # Prepare multilingual response
+    multilingual_projects = []
+    for proj in projects:
+        multilingual_proj = prepare_multilingual_response(
+            proj, 
+            ['title', 'description'], 
+            lang
+        )
+        multilingual_projects.append(multilingual_proj)
+    
+    return multilingual_projects
 
 @router.post("/projects", response_model=ProjectRead)
 async def create_project(
@@ -88,17 +103,24 @@ async def upload_project_cover_photo(
     project.update(db=db, db_obj=db_project, obj_in={"cover_photo_url": file_url})
     return {"message": "Cover photo uploaded successfully", "url": file_url}
 
-@router.get("/projects/{project_id}", response_model=ProjectRead)
+@router.get("/projects/{project_id}")
 @cache(expire=300)
 async def get_project(
     project_id: int,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific project by ID"""
+    """Get a specific project by ID with multilingual support"""
     db_project = project.get(db, id=project_id)
     if not db_project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return db_project
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_project, 
+        ['title', 'description'], 
+        lang
+    )
 
 @router.put("/projects/{project_id}", response_model=ProjectRead)
 async def update_project(

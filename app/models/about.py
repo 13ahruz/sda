@@ -6,9 +6,26 @@ class About(Base, TimestampMixin):
     __tablename__ = "about"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    experience: Mapped[str] = mapped_column(Text, nullable=False)
-    project_count: Mapped[str] = mapped_column(Text, nullable=False)
-    members: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # Multilingual experience fields
+    experience_en: Mapped[str | None] = mapped_column(Text)
+    experience_az: Mapped[str | None] = mapped_column(Text)
+    experience_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual project count fields
+    project_count_en: Mapped[str | None] = mapped_column(Text)
+    project_count_az: Mapped[str | None] = mapped_column(Text)
+    project_count_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual members fields
+    members_en: Mapped[str | None] = mapped_column(Text)
+    members_az: Mapped[str | None] = mapped_column(Text)
+    members_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy fields
+    experience: Mapped[str | None] = mapped_column(Text)
+    project_count: Mapped[str | None] = mapped_column(Text)
+    members: Mapped[str | None] = mapped_column(Text)
     
     logos: Mapped[list["AboutLogo"]] = relationship(back_populates="about", cascade="all, delete-orphan", lazy="select")
 

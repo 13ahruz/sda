@@ -6,8 +6,21 @@ class TeamMember(Base, TimestampMixin):
     __tablename__ = "team_members"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    full_name: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # Multilingual name fields
+    full_name_en: Mapped[str | None] = mapped_column(Text)
+    full_name_az: Mapped[str | None] = mapped_column(Text)
+    full_name_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual role fields
+    role_en: Mapped[str | None] = mapped_column(Text)
+    role_az: Mapped[str | None] = mapped_column(Text)
+    role_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy fields
+    full_name: Mapped[str | None] = mapped_column(Text)
     role: Mapped[str | None] = mapped_column(Text)
+    
     photo_url: Mapped[str | None] = mapped_column(Text)
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     

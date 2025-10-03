@@ -13,20 +13,35 @@ from ..schemas.news import (
     NewsSectionUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # News endpoints
-@router.get("/news", response_model=List[NewsRead])
+@router.get("/news")
 @cache(expire=300)
 async def list_news(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     tags: Optional[List[str]] = Query(None),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all news with optional tag filtering"""
-    return news.get_multi_filtered(db, skip=skip, limit=limit, tags=tags)
+    """Get all news with optional tag filtering and multilingual support"""
+    lang = validate_language(language)
+    news_items = news.get_multi_filtered(db, skip=skip, limit=limit, tags=tags)
+    
+    # Prepare multilingual response
+    multilingual_news = []
+    for news_item in news_items:
+        multilingual_news_item = prepare_multilingual_response(
+            news_item, 
+            ['title', 'description', 'content'], 
+            lang
+        )
+        multilingual_news.append(multilingual_news_item)
+    
+    return multilingual_news
 
 @router.post("/news", response_model=NewsRead)
 async def create_news(
@@ -77,29 +92,43 @@ async def upload_news_photo(
     news.update(db=db, db_obj=db_news, obj_in={"photo_url": file_url})
     return {"message": "Photo uploaded successfully", "url": file_url}
 
-@router.get("/news/{news_id}", response_model=NewsRead)
+@router.get("/news/{news_id}")
 @cache(expire=300)
 async def get_news(
     news_id: int,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific news article by ID"""
+    """Get a specific news article by ID with multilingual support"""
     db_news = news.get(db, id=news_id)
     if not db_news:
         raise HTTPException(status_code=404, detail="News not found")
-    return db_news
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_news, 
+        ['title', 'description', 'content'], 
+        lang
+    )
 
-@router.get("/news/slug/{news_slug}", response_model=NewsRead)
+@router.get("/news/slug/{news_slug}")
 @cache(expire=300)
 async def get_news_by_slug(
     news_slug: str,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific news article by slug"""
+    """Get a specific news article by slug with multilingual support"""
     db_news = news.get_by_slug(db, slug=news_slug)
     if not db_news:
         raise HTTPException(status_code=404, detail="News not found")
-    return db_news
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_news, 
+        ['title', 'description', 'content'], 
+        lang
+    )
 
 @router.put("/news/{news_id}", response_model=NewsRead)
 async def update_news(

@@ -7,10 +7,33 @@ class News(Base, TimestampMixin):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     slug: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    title: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # Multilingual title fields
+    title_en: Mapped[str | None] = mapped_column(Text)
+    title_az: Mapped[str | None] = mapped_column(Text)
+    title_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual excerpt fields
+    excerpt_en: Mapped[str | None] = mapped_column(Text)
+    excerpt_az: Mapped[str | None] = mapped_column(Text)
+    excerpt_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual content fields
+    content_en: Mapped[str | None] = mapped_column(Text)
+    content_az: Mapped[str | None] = mapped_column(Text)
+    content_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual summary fields
+    summary_en: Mapped[str | None] = mapped_column(Text)
+    summary_az: Mapped[str | None] = mapped_column(Text)
+    summary_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy fields (will be migrated to _en versions)
+    title: Mapped[str | None] = mapped_column(Text)
     excerpt: Mapped[str | None] = mapped_column(Text)
     content: Mapped[str | None] = mapped_column(Text)
     summary: Mapped[str | None] = mapped_column(Text)
+    
     photo_url: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))  # Trends, Insights, Guides
     tags: Mapped[list[str]] = mapped_column(ARRAY(Text))

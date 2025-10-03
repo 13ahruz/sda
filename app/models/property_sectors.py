@@ -6,8 +6,21 @@ class PropertySector(Base, TimestampMixin):
     __tablename__ = "property_sectors"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    
+    # Multilingual title fields
+    title_en: Mapped[str | None] = mapped_column(Text)
+    title_az: Mapped[str | None] = mapped_column(Text)
+    title_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual description fields
+    description_en: Mapped[str | None] = mapped_column(Text)
+    description_az: Mapped[str | None] = mapped_column(Text)
+    description_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy fields
+    title: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
+    
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     
     inns: Mapped[list["SectorInn"]] = relationship(back_populates="property_sector", cascade="all, delete-orphan", lazy="select")

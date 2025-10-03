@@ -6,7 +6,19 @@ class Partner(Base, TimestampMixin):
     __tablename__ = "partners"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # Multilingual title fields
+    title_en: Mapped[str | None] = mapped_column(Text)
+    title_az: Mapped[str | None] = mapped_column(Text)
+    title_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual button text fields
+    button_text_en: Mapped[str | None] = mapped_column(Text)
+    button_text_az: Mapped[str | None] = mapped_column(Text)
+    button_text_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy fields
+    title: Mapped[str | None] = mapped_column(Text)
     button_text: Mapped[str | None] = mapped_column(Text)
     
     logos: Mapped[list["PartnerLogo"]] = relationship(back_populates="partner", cascade="all, delete-orphan", lazy="select")

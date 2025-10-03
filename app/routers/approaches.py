@@ -9,18 +9,33 @@ from ..schemas.approaches import (
     ApproachRead,
     ApproachUpdate
 )
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
-@router.get("/approaches", response_model=List[ApproachRead])
+@router.get("/approaches")
 @cache(expire=300)  # Cache for 5 minutes
 async def list_approaches(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all approaches ordered by order field"""
-    return approach.get_multi_ordered(db, skip=skip, limit=limit)
+    """Get all approaches ordered by order field with multilingual support"""
+    lang = validate_language(language)
+    approaches = approach.get_multi_ordered(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_approaches = []
+    for appr in approaches:
+        multilingual_appr = prepare_multilingual_response(
+            appr, 
+            ['title', 'description'], 
+            lang
+        )
+        multilingual_approaches.append(multilingual_appr)
+    
+    return multilingual_approaches
 
 @router.post("/approaches", response_model=ApproachRead)
 async def create_approach(

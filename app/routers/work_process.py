@@ -10,18 +10,33 @@ from ..schemas.work_process import (
     WorkProcessUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
-@router.get("/work-processes", response_model=List[WorkProcessRead])
+@router.get("/work-processes")
 @cache(expire=300)
 async def list_work_processes(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all work processes"""
-    return work_process.get_multi_ordered(db, skip=skip, limit=limit)
+    """Get all work processes with multilingual support"""
+    lang = validate_language(language)
+    work_processes = work_process.get_multi_ordered(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_work_processes = []
+    for wp in work_processes:
+        multilingual_wp = prepare_multilingual_response(
+            wp, 
+            ['title', 'description'], 
+            lang
+        )
+        multilingual_work_processes.append(multilingual_wp)
+    
+    return multilingual_work_processes
 
 @router.post("/work-processes", response_model=WorkProcessRead)
 async def create_work_process(

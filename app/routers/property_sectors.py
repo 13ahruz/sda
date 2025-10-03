@@ -13,19 +13,34 @@ from ..schemas.property_sectors import (
     SectorInnRead,
     SectorInnUpdate
 )
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # PropertySector endpoints
-@router.get("/property-sectors", response_model=List[PropertySectorRead])
+@router.get("/property-sectors")
 @cache(expire=300)
 async def list_property_sectors(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all property sectors ordered by order field"""
-    return property_sector.get_multi_ordered(db, skip=skip, limit=limit)
+    """Get all property sectors ordered by order field with multilingual support"""
+    lang = validate_language(language)
+    sectors = property_sector.get_multi_ordered(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_sectors = []
+    for sector in sectors:
+        multilingual_sector = prepare_multilingual_response(
+            sector, 
+            ['title', 'description'], 
+            lang
+        )
+        multilingual_sectors.append(multilingual_sector)
+    
+    return multilingual_sectors
 
 @router.post("/property-sectors", response_model=PropertySectorRead)
 async def create_property_sector(
@@ -66,17 +81,24 @@ async def create_property_sector_json(
             )
         raise HTTPException(status_code=400, detail="Database constraint violation")
 
-@router.get("/property-sectors/{property_sector_id}", response_model=PropertySectorRead)
+@router.get("/property-sectors/{property_sector_id}")
 @cache(expire=300)
 async def get_property_sector(
     property_sector_id: int,
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get a specific property sector by ID"""
+    """Get a specific property sector by ID with multilingual support"""
     db_property_sector = property_sector.get(db, id=property_sector_id)
     if not db_property_sector:
         raise HTTPException(status_code=404, detail="Property sector not found")
-    return db_property_sector
+    
+    lang = validate_language(language)
+    return prepare_multilingual_response(
+        db_property_sector, 
+        ['title', 'description'], 
+        lang
+    )
 
 @router.put("/property-sectors/{property_sector_id}", response_model=PropertySectorRead)
 async def update_property_sector(

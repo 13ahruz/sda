@@ -13,19 +13,34 @@ from ..schemas.partners import (
     PartnerLogoUpdate
 )
 from ..utils.uploads import upload_file
+from ..utils.multilingual import prepare_multilingual_response, validate_language
 
 router = APIRouter()
 
 # Partner endpoints
-@router.get("/partners", response_model=List[PartnerRead])
+@router.get("/partners")
 @cache(expire=300)
 async def list_partners(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
+    language: str = Query("en", description="Language code (en, az, ru)"),
     db: Session = Depends(get_db)
 ):
-    """Get all partners"""
-    return partner.get_multi(db, skip=skip, limit=limit)
+    """Get all partners with multilingual support"""
+    lang = validate_language(language)
+    partners = partner.get_multi(db, skip=skip, limit=limit)
+    
+    # Prepare multilingual response
+    multilingual_partners = []
+    for ptnr in partners:
+        multilingual_ptnr = prepare_multilingual_response(
+            ptnr, 
+            ['title', 'button_text'], 
+            lang
+        )
+        multilingual_partners.append(multilingual_ptnr)
+    
+    return multilingual_partners
 
 @router.post("/partners", response_model=PartnerRead)
 async def create_partner(

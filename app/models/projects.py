@@ -7,7 +7,23 @@ class Project(Base, TimestampMixin):
     __tablename__ = "projects"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # Multilingual title fields
+    title_en: Mapped[str | None] = mapped_column(Text)
+    title_az: Mapped[str | None] = mapped_column(Text)
+    title_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Multilingual description fields
+    description_en: Mapped[str | None] = mapped_column(Text)
+    description_az: Mapped[str | None] = mapped_column(Text)
+    description_ru: Mapped[str | None] = mapped_column(Text)
+    
+    # Legacy title field (will be migrated to title_en)
+    title: Mapped[str | None] = mapped_column(Text)
+    
+    # Slug for URL-friendly identification
+    slug: Mapped[str | None] = mapped_column(Text, unique=True)
+    
     tag: Mapped[str | None] = mapped_column(Text)
     client: Mapped[str | None] = mapped_column(Text)
     year: Mapped[int | None] = mapped_column(Integer)
@@ -21,6 +37,10 @@ class Project(Base, TimestampMixin):
         Index("ix_projects_property_sector", "property_sector_id"),
         Index("ix_projects_year", "year"),
         Index("ix_projects_tag", "tag"),
+        Index("ix_projects_slug", "slug"),
+        Index("ix_projects_title_en", "title_en"),
+        Index("ix_projects_title_az", "title_az"),
+        Index("ix_projects_title_ru", "title_ru"),
     )
 
 class ProjectPhoto(Base, TimestampMixin):
